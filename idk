@@ -1,0 +1,27 @@
+local player = game.Players.LocalPlayer
+
+local function equipTool(char)
+    local tool
+    repeat
+        tool = player.Backpack:FindFirstChild("Donation Sign")
+        task.wait(0.2)
+    until tool
+
+    tool.Parent = char
+end
+
+local function autoEquip(char)
+    equipTool(char)
+
+    char.ChildRemoved:Connect(function(obj)
+        if obj:IsA("Tool") and obj.Name == "Donation Sign" then
+            equipTool(char)
+        end
+    end)
+end
+
+-- chạy luôn
+if player.Character then
+    autoEquip(player.Character)
+end
+player.CharacterAdded:Connect(autoEquip)
