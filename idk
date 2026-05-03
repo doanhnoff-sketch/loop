@@ -1,37 +1,36 @@
 -- Chờ game tải xong
 if not game:IsLoaded() then game.Loaded:Wait() end
 
--- Biến chặn để đảm bảo toàn bộ script này chỉ chạy 1 lần duy nhất mỗi khi vào server
-if _G.SignEquippedOnce then return end
-_G.SignEquippedOnce = true
+-- Biến chặn để không bao giờ loop trong cùng một server
+if _G.SignHandled then return end
+_G.SignHandled = true
 
 local player = game.Players.LocalPlayer
 
-local function equipToolOnce(char)
-    local tool
-    local attempts = 0
-    -- Thử tìm biển trong Backpack tối đa 10 giây (20 lần * 0.5s)
+local function EquipAndFinish(char)
+    local tool = nil
+    local count = 0
+    
+    -- Thử tìm biển trong túi đồ (tối đa 5 giây)
     repeat
         tool = player.Backpack:FindFirstChild("Donation Sign")
         task.wait(0.5)
-        attempts = attempts + 1
-    until tool or attempts > 20
+        count = count + 1
+    until tool or count > 10
 
     if tool then
         tool.Parent = char
-        -- Sau khi cầm lên thành công, in một dòng thông báo duy nhất
-        print("✅ Đã cầm biển thành công.")
+        print("✅ Đã cầm biển cho server này. Hệ thống dừng kiểm tra.")
     end
 end
 
--- Thực hiện cầm biển ngay khi nhân vật xuất hiện lần đầu
+-- Thực hiện hành động duy nhất khi vào server
 if player.Character then
-    equipToolOnce(player.Character)
+    EquipAndFinish(player.Character)
 else
-    -- Nếu chưa có nhân vật thì đợi lần đầu tiên xuất hiện
     local connection
     connection = player.CharacterAdded:Connect(function(char)
-        equipToolOnce(char)
-        connection:Disconnect() -- Ngắt kết nối ngay lập tức để không bao giờ chạy lại nữa
+        EquipAndFinish(char)
+        connection:Disconnect() -- Tự hủy để mạng sau không cầm lại nữa
     end)
 end
